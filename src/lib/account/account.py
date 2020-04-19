@@ -2,8 +2,11 @@ import sys
 import traceback
 
 from abc import ABCMeta, abstractmethod
+from lib.util import auto_str
+from lib.log import logger
 
-# Abstract classes use ABCMeta
+@logger
+@auto_str
 class Account(metaclass=ABCMeta) :
 
     def __init__(self, account_name, secret_reader) :
@@ -14,14 +17,14 @@ class Account(metaclass=ABCMeta) :
     def connect(self) :
         credentials = self.secret_reader.read(self.account_name)
         if credentials == None :
-            print(f"WARN: No credentials found for account type '{self.account_name}'.", file=sys.stderr)
+            self.log.warn(f"No credentials found for account type '{self.account_name}'.")
         else :
-            print(f"Account '{self.account_name}' connecting...")
+            self.log.info(f"Account '{self.account_name}' connecting...")
             try :
                 self.connect_with_credentials(credentials)
                 self.is_connected = True
             except :
-                print(f"ERROR: Account '{self.account_name}' failed to connect.", file=sys.stderr)
+                self.log.error(f"Account '{self.account_name}' failed to connect.")
                 traceback.print_exc()
 
     @abstractmethod
@@ -29,7 +32,7 @@ class Account(metaclass=ABCMeta) :
         pass
 
     def disconnect(self) :
-        print(f"Disconnecting from account '{self.account_name}'")
+        self.log.info(f"Disconnecting from account '{self.account_name}'")
         self.is_connected = False
         self.disconnect_and_forget()
 
